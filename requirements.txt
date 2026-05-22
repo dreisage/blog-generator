@@ -1,7 +1,7 @@
-echo fastapi > requirements.txt
-echo uvicorn >> requirements.txt
-echo openai >> requirements.txt
-echo python-dotenv >> requirements.txt
-echo requests >> requirements.txt
-echo aiohttp >> requirements.txt
-echo python-multipart >> requirements.txt
+fastapi
+uvicorn[standard]
+openai
+python-dotenv
+requests
+aiohttp
+python-multipart

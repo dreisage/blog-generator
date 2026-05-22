@@ -1,0 +1,38 @@
+
+# Environment variables
+.env
+*.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Discord Webhook (if in any file)
+*webhook*
+
+# OpenAI keys
+*sk-*
+
+# Supabase keys
+*sb_publishable*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
