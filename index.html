@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Blog Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        /* Generator Card */
+        .generator-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 40px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn-generate:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-generate:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            min-width: 300px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Posts Grid */
+        .posts-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .posts-section h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .posts-grid {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .post-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s;
+        }
+        
+        .post-card:hover {
+            transform: translateX(5px);
+        }
+        
+        .post-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .post-card p {
+            color: #666;
+            line-height: 1.6;
+            max-height: 100px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .post-date {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 10px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .input-group { flex-direction: column; }
+            .btn-generate { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ AI Blog Generator</h1>
+            <p>Generate professional blog posts with AI</p>
+        </div>
+        
+        <div class="generator-card">
+            <div class="input-group">
+                <input type="text" id="topic" placeholder="Enter a blog topic... e.g., 'The Future of Artificial Intelligence'">
+                <button class="btn-generate" onclick="generateBlog()">Generate Blog Post</button>
+            </div>
+        </div>
+        
+        <div class="posts-section">
+            <h2>📚 Previously Generated Posts</h2>
+            <div id="posts-list" class="posts-grid">
+                <div class="empty-state">Loading posts...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h3>Generating Blog Post...</h3>
+            <p>This may take 5-10 seconds</p>
+        </div>
+    </div>
+    
+    <script>
+    async function generateBlog() {
+        const topic = document.getElementById('topic').value;
+        if (!topic.trim()) {
+            alert('Please enter a blog topic');
+            return;
+        }
+        
+        const generateBtn = document.querySelector('.btn-generate');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        loadingOverlay.style.display = 'flex';
+        generateBtn.disabled = true;
+        
+        try {
+            const response = await fetch('/generate_blog/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ topic: topic })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to generate blog');
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(`✅ Blog generated successfully!\n\nTitle: ${data.title}`);
+                document.getElementById('topic').value = '';
+                loadPreviousPosts();
+            } else {
+                alert('Error generating blog post');
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Error generating blog post. Please try again.');
+        } finally {
+            loadingOverlay.style.display = 'none';
+            generateBtn.disabled = false;
+        }
+    }
+    
+    async function loadPreviousPosts() {
+        const postsList = document.getElementById('posts-list');
+        postsList.innerHTML = '<div class="empty-state">Loading posts...</div>';
+        
+        try {
+            const response = await fetch('/get_posts/');
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch posts');
+            }
+            
+            const posts = await response.json();
+            
+            if (!posts || posts.length === 0) {
+                postsList.innerHTML = '<div class="empty-state">No posts yet. Generate your first blog post!</div>';
+                return;
+            }
+            
+            postsList.innerHTML = '';
+            
+            posts.forEach(post => {
+                const postDiv = document.createElement('div');
+                postDiv.className = 'post-card';
+                
+                const previewContent = post.content.length > 200 
+                    ? post.content.substring(0, 200) + '...' 
+                    : post.content;
+                
+                const date = new Date(post.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                postDiv.innerHTML = `
+                    <h3>📄 ${escapeHtml(post.title)}</h3>
+                    <p>${escapeHtml(previewContent)}</p>
+                    <div class="post-date">📅 ${date}</div>
+                `;
+                
+                postsList.appendChild(postDiv);
+            });
+            
+        } catch (error) {
+            console.error('Error loading posts:', error);
+            postsList.innerHTML = '<div class="empty-state">Error loading posts. Please refresh the page.</div>';
+        }
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    window.onload = loadPreviousPosts;
+</script>
+</body>
+</html>
