@@ -1,0 +1,19 @@
+name: Deploy to Railway
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Railway
+        uses: bervProject/railway-deploy@main
+        env:
+          RAILWAY_TOKEN: f47cd2b9-d7a3-41b8-87dc-4f6c20d4d232
